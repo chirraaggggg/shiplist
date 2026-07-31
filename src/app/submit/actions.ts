@@ -4,7 +4,7 @@ import * as cheerio from "cheerio";
 import Anthropic from "@anthropic-ai/sdk";
 
 // Mock submit action
-export async function submitProduct(data: any) {
+export async function submitProduct(data: any): Promise<{ success: boolean; productId?: string; error?: string }> {
   // Mock artificial delay
   await new Promise((resolve) => setTimeout(resolve, 1500));
   

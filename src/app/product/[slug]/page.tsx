@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ExternalLink, Tag, User } from "lucide-react";
+import { ExternalLink, Tag, User, Trophy } from "lucide-react";
 import type { Metadata } from "next";
 import ReactMarkdown from "react-markdown";
 
@@ -50,6 +50,9 @@ export default async function ProductPage({ params }: Props) {
 
   const productPageUrl = `https://shiplist.com/product/${product.slug}`;
 
+  // Check if winner
+  const isWinner = (product as any).isWeeklyWinner || product.upvotes > 2000;
+
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Product",
@@ -72,6 +75,27 @@ export default async function ProductPage({ params }: Props) {
   const embedCode = `<a href="${productPageUrl}" rel="dofollow" target="_blank">
   <img src="${productPageUrl}/badge.svg" alt="As Featured on ShipList" width="200" />
 </a>`;
+
+  // Map mock comments to CommentNode structure
+  const formattedComments = (product.comments || []).map((c) => ({
+    id: c.id,
+    body: c.body,
+    author: c.author,
+    avatar: c.avatar,
+    userId: c.id === "c1" ? "user_mock_123" : "other_user",
+    createdAt: c.createdAt,
+    deleted: false,
+    replies: (c.replies || []).map((r) => ({
+      id: r.id,
+      body: r.body,
+      author: r.author,
+      avatar: r.avatar,
+      userId: r.id === "c1r1" ? "user_mock_123" : "other_user",
+      createdAt: r.createdAt,
+      deleted: false,
+      replies: [],
+    })),
+  }));
 
   return (
     <>
@@ -99,10 +123,19 @@ export default async function ProductPage({ params }: Props) {
 
               {/* Name & meta */}
               <div className="flex-1 min-w-0">
-                <div className="flex flex-wrap items-center gap-2 mb-1">
+                <div className="flex flex-wrap items-center gap-2.5 mb-1">
                   <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">
                     {product.name}
                   </h1>
+
+                  {/* Permanent Winner Badge */}
+                  {isWinner && (
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-yellow-500/10 text-yellow-600 text-xs font-bold border border-yellow-500/30 shadow-xs">
+                      <Trophy className="h-3.5 w-3.5" />
+                      Weekly Launch Winner
+                    </span>
+                  )}
+
                   <span className="px-2.5 py-0.5 rounded-full bg-primary/10 text-primary text-xs font-bold uppercase tracking-wider">
                     {product.pricingType.replace("_", " ")}
                   </span>
@@ -130,6 +163,7 @@ export default async function ProductPage({ params }: Props) {
               {/* Actions */}
               <div className="flex items-center gap-3 flex-shrink-0">
                 <UpvoteButton
+                  productId={product.id}
                   initialCount={product.upvotes}
                   productName={product.name}
                   large
@@ -235,7 +269,11 @@ export default async function ProductPage({ params }: Props) {
           />
 
           {/* Comments */}
-          <CommentsSection comments={product.comments} productName={product.name} />
+          <CommentsSection
+            initialComments={formattedComments}
+            productId={product.id}
+            productName={product.name}
+          />
         </div>
       </div>
     </>

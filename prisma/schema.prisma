@@ -1,0 +1,85 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+model User {
+  id        String    @id @default(cuid())
+  clerkId   String    @unique
+  email     String    @unique
+  name      String?
+  role      Role      @default(USER)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  upvotes   Upvote[]
+  comments  Comment[]
+}
+
+enum ProductStatus {
+  PENDING_REVIEW
+  APPROVED
+  FLAGGED
+}
+
+model Product {
+  id             String        @id @default(cuid())
+  slug           String        @unique
+  name           String
+  tagline        String
+  description    String
+  logo           String
+  websiteUrl     String
+  pricingType    String
+  categories     String[]
+  tags           String[]
+  screenshots    String[]
+  launchWeek     String        // e.g. "2026-W31"
+  status         ProductStatus @default(PENDING_REVIEW)
+  upvoteCount    Int           @default(0)
+  trustScore     Float         @default(1.0)
+  flagged        Boolean       @default(false)
+  weeklyRank     Int?
+  isWeeklyWinner Boolean       @default(false)
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  upvotes  Upvote[]
+  comments Comment[]
+}
+
+model Upvote {
+  id        String   @id @default(cuid())
+  userId    String
+  productId String
+  createdAt DateTime @default(now())
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, productId])
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  body      String
+  userId    String
+  productId String
+  parentId  String?
+  deleted   Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user    User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  parent  Comment?  @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies Comment[] @relation("CommentReplies")
+}

@@ -1,14 +1,15 @@
 "use client";
 
-import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ChevronUp, ShieldCheck } from "lucide-react";
+import { ShieldCheck, Trophy, AlertTriangle } from "lucide-react";
 import { Product } from "@/data/mock-products";
+import { UpvoteButton } from "./upvote-button";
 
 interface ProductCardProps {
   product: Product;
   rank?: number;
+  isAdmin?: boolean;
 }
 
 const RANK_STYLES: Record<number, string> = {
@@ -23,19 +24,9 @@ const RANK_LABELS: Record<number, string> = {
   3: "🥉",
 };
 
-export function ProductCard({ product, rank }: ProductCardProps) {
-  const [isUpvoted, setIsUpvoted] = useState(false);
-  const [upvoteCount, setUpvoteCount] = useState(product.upvotes);
-
-  const handleUpvote = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsUpvoted((prev) => {
-      const next = !prev;
-      setUpvoteCount((c) => (next ? c + 1 : c - 1));
-      return next;
-    });
-  };
+export function ProductCard({ product, rank, isAdmin }: ProductCardProps) {
+  const isWinner = (product as any).isWeeklyWinner;
+  const isUnderReview = (product as any).status === "FLAGGED" || (product as any).flagged;
 
   return (
     <Link
@@ -70,15 +61,35 @@ export function ProductCard({ product, rank }: ProductCardProps) {
             <h3 className="font-bold text-base truncate text-foreground leading-tight">
               {product.name}
             </h3>
+
+            {/* Weekly Winner Badge */}
+            {isWinner && (
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-yellow-500/10 text-yellow-600 text-xs font-bold border border-yellow-500/20">
+                <Trophy className="h-3 w-3" />
+                Winner
+              </span>
+            )}
+
+            {/* Verified dofollow badge */}
             {product.hasDofollowBadge && (
               <div title="Verified & Dofollow link" className="flex items-center justify-center text-primary flex-shrink-0">
                 <ShieldCheck className="h-4 w-4" />
               </div>
             )}
+
+            {/* Admin Under Review Badge */}
+            {isUnderReview && isAdmin && (
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-destructive/10 text-destructive text-xs font-semibold">
+                <AlertTriangle className="h-3 w-3" />
+                Under Review
+              </span>
+            )}
           </div>
+
           <p className="text-muted-foreground text-sm truncate mb-2 leading-snug">
             {product.tagline}
           </p>
+
           <div className="flex flex-wrap gap-1.5">
             {product.categories.map((category) => (
               <span
@@ -94,25 +105,11 @@ export function ProductCard({ product, rank }: ProductCardProps) {
 
       {/* Upvote button */}
       <div className="ml-4 flex-shrink-0">
-        <button
-          onClick={handleUpvote}
-          aria-pressed={isUpvoted}
-          aria-label={`Upvote ${product.name}`}
-          className={`flex flex-col items-center justify-center h-16 w-14 rounded-xl border-2 transition-all duration-200 ${
-            isUpvoted
-              ? "border-primary bg-primary text-primary-foreground shadow-md scale-105"
-              : "border-border/50 bg-background text-foreground hover:border-primary/50 hover:text-primary"
-          }`}
-        >
-          <ChevronUp
-            className={`h-5 w-5 mb-0.5 transition-transform ${isUpvoted ? "scale-110" : ""}`}
-          />
-          <span className="text-sm font-bold tabular-nums">
-            {upvoteCount >= 1000
-              ? `${(upvoteCount / 1000).toFixed(1)}k`
-              : upvoteCount}
-          </span>
-        </button>
+        <UpvoteButton
+          productId={product.id}
+          initialCount={product.upvotes}
+          productName={product.name}
+        />
       </div>
     </Link>
   );

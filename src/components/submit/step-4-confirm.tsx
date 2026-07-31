@@ -32,7 +32,7 @@ export function Step4Confirm({ data, onBack }: Step4Props) {
         // For simplicity, we just pass the week and productId in query params
         const params = new URLSearchParams({
           week: data.launchWeek,
-          id: result.productId,
+          id: result.productId || "",
           name: data.name
         });
         router.push(`/submit/success?${params.toString()}`);
