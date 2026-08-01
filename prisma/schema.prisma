@@ -128,11 +128,13 @@ model DirectorySubmission {
   id                  String    @id @default(cuid())
   productId           String
   directoryName       String
-  listingUrl          String
+  listingUrl          String?
   status              String    @default("pending")
   lastCheckedAt       DateTime?
   httpStatus          Int?
   isDofollowConfirmed Boolean   @default(false)
+  screenshotUrl       String?
+  tier                String?
   createdAt           DateTime  @default(now())
   updatedAt           DateTime  @updatedAt
 
