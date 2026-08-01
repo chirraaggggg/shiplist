@@ -23,6 +23,7 @@ model User {
   upvotes  Upvote[]
   comments Comment[]
   payments Payment[]
+  products Product[] @relation("MakerProducts")
 }
 
 enum ProductStatus {
@@ -55,10 +56,17 @@ model Product {
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
 
+  makerId                 String?
+  backlinkLastCheckedAt   DateTime?
+  backlinkHttpStatus      Int?
+  backlinkIsDofollow      Boolean @default(false)
+
+  maker    User?     @relation("MakerProducts", fields: [makerId], references: [id])
   upvotes  Upvote[]
   comments Comment[]
   payments Payment[]
   blogPost BlogPost?
+  directorySubmissions DirectorySubmission[]
 }
 
 model Upvote {
@@ -114,4 +122,19 @@ model BlogPost {
   updatedAt DateTime @updatedAt
 
   product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+}
+
+model DirectorySubmission {
+  id                  String    @id @default(cuid())
+  productId           String
+  directoryName       String
+  listingUrl          String
+  status              String    @default("pending")
+  lastCheckedAt       DateTime?
+  httpStatus          Int?
+  isDofollowConfirmed Boolean   @default(false)
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  product             Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
 }

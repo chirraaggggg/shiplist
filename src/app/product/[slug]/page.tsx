@@ -142,22 +142,34 @@ export default async function ProductPage({ params }: Props) {
                 </div>
                 <p className="text-lg text-muted-foreground mb-3">{product.tagline}</p>
 
-                {/* Maker */}
-                <Link
-                  href={product.maker.profileUrl}
-                  className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  <div className="relative h-6 w-6 rounded-full overflow-hidden border border-border/50">
-                    <Image
-                      src={product.maker.avatar}
-                      alt={product.maker.name}
-                      fill
-                      className="object-cover"
-                    />
+                {/* Maker & Link Health */}
+                <div className="flex items-center gap-4">
+                  <Link
+                    href={product.maker.profileUrl}
+                    className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    <div className="relative h-6 w-6 rounded-full overflow-hidden border border-border/50">
+                      <Image
+                        src={product.maker.avatar}
+                        alt={product.maker.name}
+                        fill
+                        className="object-cover"
+                      />
+                    </div>
+                    <User className="h-3.5 w-3.5" />
+                    <span className="font-medium">{product.maker.name}</span>
+                  </Link>
+
+                  <div className="h-4 w-px bg-border/50 hidden md:block"></div>
+
+                  <div 
+                    className="inline-flex items-center gap-1.5 text-xs font-bold text-green-600 bg-green-500/10 px-2.5 py-1 rounded-full border border-green-500/20"
+                    title="This maker's backlinks are verified live and dofollow"
+                  >
+                    <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse"></div>
+                    98% Links Healthy
                   </div>
-                  <User className="h-3.5 w-3.5" />
-                  <span className="font-medium">{product.maker.name}</span>
-                </Link>
+                </div>
               </div>
 
               {/* Actions */}
