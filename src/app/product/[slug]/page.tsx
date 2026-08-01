@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ExternalLink, Tag, User, Trophy } from "lucide-react";
+import { ExternalLink, Tag, User, Trophy, Rocket } from "lucide-react";
 import type { Metadata } from "next";
 import ReactMarkdown from "react-markdown";
 
@@ -177,6 +177,13 @@ export default async function ProductPage({ params }: Props) {
                   Visit Website
                   <ExternalLink className="h-4 w-4" />
                 </a>
+                <Link
+                  href="/pricing"
+                  className="inline-flex items-center gap-2 px-6 py-3 rounded-xl border-2 border-primary bg-primary text-primary-foreground font-bold text-base hover:bg-primary/90 transition-colors"
+                >
+                  <Rocket className="h-4 w-4" />
+                  Upgrade
+                </Link>
               </div>
             </div>
           </div>

@@ -6,6 +6,7 @@ const NAV_LINKS = [
   { href: "/", label: "Launches" },
   { href: "/leaderboard", label: "Leaderboard" },
   { href: "/pricing", label: "Pricing" },
+  { href: "/blog", label: "Blog" },
 ];
 
 export function Navbar() {

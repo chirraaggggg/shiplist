@@ -27,17 +27,70 @@ export function Step4Confirm({ data, onBack }: Step4Props) {
 
     try {
       const result = await submitProduct(data);
-      if (result.success) {
-        // Use router to redirect to success page, passing some data via query params or state.
-        // For simplicity, we just pass the week and productId in query params
+      if (!result.success) {
+        throw new Error(result.error || "Failed to submit product");
+      }
+
+      // Free tier — go straight to success
+      if (data.tier === 'free') {
         const params = new URLSearchParams({
           week: data.launchWeek,
           id: result.productId || "",
-          name: data.name
+          name: data.name,
         });
         router.push(`/submit/success?${params.toString()}`);
+        return;
+      }
+
+      // Paid tier — redirect to Dodo Payments checkout
+      const dodoProductId =
+        data.tier === 'premium_plus'
+          ? process.env.NEXT_PUBLIC_DODO_PRODUCT_ID_PREMIUM_PLUS
+          : process.env.NEXT_PUBLIC_DODO_PRODUCT_ID_PREMIUM;
+
+      if (!dodoProductId) {
+        // No product ID configured — fall back to free success page
+        console.warn("Dodo product ID not configured for tier:", data.tier);
+        const params = new URLSearchParams({
+          week: data.launchWeek,
+          id: result.productId || "",
+          name: data.name,
+        });
+        router.push(`/submit/success?${params.toString()}`);
+        return;
+      }
+
+      const checkoutRes = await fetch('/api/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          product_id: dodoProductId,
+          quantity: 1,
+          metadata: {
+            productId: result.productId || "",
+            tier: data.tier,
+          },
+        }),
+      });
+
+      if (!checkoutRes.ok) {
+        throw new Error("Failed to initiate checkout. Please try again.");
+      }
+
+      // The Dodo adapter returns the checkout URL as plain text or JSON {url}
+      const body = await checkoutRes.text();
+      let checkoutUrl: string;
+      try {
+        const json = JSON.parse(body);
+        checkoutUrl = json.url ?? json.checkout_url ?? body;
+      } catch {
+        checkoutUrl = body;
+      }
+
+      if (checkoutUrl.startsWith('http')) {
+        window.location.href = checkoutUrl;
       } else {
-        throw new Error(result.error || "Failed to submit product");
+        throw new Error("Could not obtain checkout URL. Please try again.");
       }
     } catch (err: any) {
       console.error("Submit error", err);

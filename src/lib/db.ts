@@ -11,3 +11,7 @@ export const db =
   });
 
 if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = db;
+
+// Alias so all files can import { prisma } or { db } interchangeably
+export const prisma = db;
+
